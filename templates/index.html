@@ -1,0 +1,345 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+    <style>
+        body {
+            height: 1000px;
+            width: 1000px;
+            background-color: blanchedalmond;
+        }
+
+        .form-input {
+            height: 120px;
+            width: 80%;
+            outline: none;
+            border-width: 0.5px;
+            border-style: solid;
+            border-color: whitesmoke;
+            padding-left: 10px;
+        }
+
+        div.todo-mvc {
+            position: absolute;
+            left: 30%;
+            top: 10%;
+            width: 50%;
+            height: auto;
+        }
+
+        .todo-mvc>h1 {
+            font-size: 130px;
+            color: rgba(175, 47, 47, 0.15);
+            text-align: center;
+            margin-bottom: 0px;
+        }
+
+        .todo-items {
+            list-style: none;
+        }
+
+        .todo-items-ul {
+            padding: 0;
+            margin-top: 0.5px;
+        }
+        .todo-items-div {
+            width: 100%;
+            height: 110px;
+            background-color: white;
+            border-style: solid;
+            border-width: 0.5px;
+            border-color: whitesmoke;
+        }
+
+        .destroy {
+            display: block;
+            width: 80px;
+            height: 70px;
+            float: right;
+            font-size: 60px;
+            margin-right: 20px;
+            color: #cc9a9a;
+            border: none;
+            outline: none;
+            background-color: white;
+            transition: color 0.2s ease-out;
+        }
+
+        .todo-items-div>input,
+        .todo-items-div>button {
+            margin-top: 20px;
+        }
+
+        .todo-items-div>label {
+            position: relative;
+            bottom: 8px;
+        }
+
+        .todo-items-div>label,
+        .form-input {
+            font-size: 30px;
+        }
+
+        .destroy:after {
+            content: "×";
+        }
+        .destroy{
+            display: none;
+            width: 40px;
+            height: 40px;
+        }
+        .destroy:hover {
+            color: #af5b5e;
+        }
+        .todo-items-div:hover .destroy{
+            display: block;
+        }
+        .toggle-input {
+            height: auto;
+            width: auto;
+            opacity: 0;
+        }
+
+        .toggle-all {
+            opacity: 0;
+            width: 20px;
+            height: 80px;
+        }
+
+        .toggle-all+label {
+            width: 30px;
+            height: 40px;
+            -webkit-transform: rotateX(90deg);
+            transform: rotateX(90deg);
+        }
+
+        .toggle-all+label:before {
+            content: '❯';
+            font-size: 42px;
+            color: #e6e6e6;
+            width: 10px;
+            height: 10px;
+        }
+
+        .toggle-all+label:hover {
+            -webkit-transform: rotate(90deg)
+        }
+
+        .toggle-all:checked+label:before {
+            color: #737373;
+        }
+
+        .todo-items-div>input[type="checkbox"],
+        .todo-items-div>input[type="checkbox"]:checked {
+            width: 20px;
+            height: 20px;
+            -webkit-appearance: none;
+            background-position: center left;
+            outline: none;
+        }
+
+        .todo-items-div>input[type="checkbox"] {
+            background-image: url({% static 'image/圆形选框.svg' %})
+        }
+
+        .todo-items-div>input[type="checkbox"]:checked {
+            background-image: url("{% static 'image/圆形选中 .svg' %}");
+        }
+
+        .footers {
+            height: 70px;
+            width: inherit;
+            background-color: white;
+            text-align: center;
+        }
+
+        div.footers>ul>li {
+            list-style: none;
+            float: left;
+            margin-top: 15px;
+            font-size: 30px;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            display: inline;
+            margin-left: 20px;
+            padding: 10px;
+        }
+
+        div.footers>ul>li>a:hover,
+        .selected {
+            border-color: lightgray;
+            border-width: 1px;
+            border-style: solid;
+        }
+        .transStatus{
+            text-decoration: line-through;
+            color: lightgray;
+        }
+        .todo-show{
+            width: 80%;
+            height: 90px;
+            border-color: #E0E0E0;
+            outline: none;
+            font-size: 30px;
+            position: relative;
+            bottom: 10px;
+            background-color:#F8F8F8;;
+        }
+        .todo-hide{
+            display: none;
+        }
+        .editable{
+            width: 100px;
+        }
+        .hide{
+            display: none;
+        }
+        .show{
+            display: inline;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <div id="todo-mvc" class="todo-mvc">
+        <h1>todos</h1>
+        <div class="toole-input" style="background-color: white;">
+            <input type="checkbox" class="toggle-all" id="toggle-all" v-model="transDone">
+            <label for="toggle-all"></label>
+            <input type="text" class="form-input" placeholder="What needs to be done! " v-on:keyup.enter="addTodo"
+                v-model="newTodo" />
+        </div>
+        <ul class="todo-items-ul">
+            <li class="todo-items" v-for="todo in filteredTodos">
+                <div class="todo-items-div">
+                    <input type="checkbox" style="zoom: 180%;" v-bind:id="todo.id" class="toggle" v-model="todo.completed" v-bind:value="todo.completed">
+                    <label style="width: 500px;padding-right: 600px;" v-bind:for="todo.id" v-if="!todo.editable" v-bind:class="{editable:todo.editable}" @dblclick="edit(todo)" v-bind:class={transStatus:todo.completed}>{{todo.value}}</label>
+                    <input type="text" @blur="doneEdit(todo)" @keyup.enter="doneEdit(todo)" @keyup.esc="exit(todo)" class="todo-show" v-model="todo.value" v-else="todo.editable" >
+                    <button type="button" class="destroy" @click="removeTodo(todo.value)"></button>
+                </div>
+            </li>
+            <li v-if="todos.length > 0 ">
+                <div class="footers">
+                    <ul>
+                        <li style="margin-left: 2px;margin-right:50px;">
+                            <strong>{{leftingNumbers}} items left</strong>
+                        </li>
+                        <li>
+                            <a :class="{selected:visibility == 'all'}" v-on:click="truansStatus('all')">all</a>
+                        </li>
+                        <li>
+                            <a :class="{selected:visibility == 'active'}" v-on:click="truansStatus('active')">active</a>
+                        </li>
+                        <li>
+                            <a :class="{selected:visibility == 'completed'}"
+                                v-on:click="truansStatus('completed')">completed</a>
+                        </li>
+                        <li>
+                            <a v-show="todos.length > leftingNumbers" v-on:click="removeTodos">
+                                Ckear compleyed
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            </li>
+        </ul>
+    </div>
+    <script>
+        var STORAGE_KEY = "todo_storage"
+        // visibility filters
+        var filters = {
+            all: function (todos) {
+                return todos;
+            },
+            active: function (todos) {
+                return todos.filter(function (todo) {
+                    return !todo.completed;
+                });
+            },
+            completed: function (todos) {
+                return todos.filter(function (todo) {
+                    return todo.completed;
+                });
+            }
+        };
+        var vm = new Vue({
+            el: "#todo-mvc",
+            data: {
+                todos: [],
+                counter: 0,
+                completed: false,
+                newTodo: "",
+                visibility: "all"
+            },
+         
+            computed: {
+                filteredTodos: function () {
+                    return filters[this.visibility](this.todos);
+                },
+                leftingNumbers:{
+                    get:function(){
+                    return filters.active(this.todos).length
+                }
+                },
+                transDone:{
+                    get:function(){
+                        this.leftingNumbers = 0
+                    },
+                    set:function(value){
+                        console.log(value);
+                    this.todos.forEach(function(todo){
+                        todo.completed = value
+                        todo.editable = false
+                    })
+                }
+                }
+            },
+            methods: {
+                addTodo: function () {
+                    if (this.newTodo === "") {
+                        return
+                    }
+                    this.todos.push({
+                        id: this.counter++,
+                        value: this.newTodo.trim(),
+                        completed: false,
+                    });
+                    this.newTodo = ""
+                },
+                removeTodo: function (todo) {
+                    this.todos.splice(this.todos.indexOf(todo), 1);
+                },
+                truansStatus: function (status) {
+                    this.visibility = status
+                },
+                removeTodos:function(){
+                    this.todos = filters.active(this.todos)
+                },
+                edit:function(todo){
+                    todo.editable = true
+                },
+                doneEdit:function(todo){
+                    index = this.todos.indexOf(todo);
+                    this.todos[index].value = todo.value;
+                    this.todos[index].editable = false
+                    console.log(this.todos[index].editable);
+                },
+                exit:function(todo){
+                    index = this.todos.indexOf(todo);
+                    this.todos[index].value = todo.value;
+                    this.todos[index].editable = true
+                }
+            }
+        })
+
+    </script>
+</body>
+
+</html>
