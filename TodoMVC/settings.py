@@ -29,6 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["todomvcs01.herokuapp.com"]
 import django_heroku
+django_heroku.settings(locals())
 
 # Application definition
 
