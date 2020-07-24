@@ -1,1 +1,1 @@
-web: gunicorn -b :$PORT ssshare.main:app
+web: gunicorn learning.wsgi --log-file -
